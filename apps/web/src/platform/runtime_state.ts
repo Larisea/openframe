@@ -73,5 +73,9 @@ export function getCurrentAIConfig(): AIConfig {
 }
 
 export function saveCurrentAIConfig(config: unknown): void {
-  writeJSON(AI_CONFIG_KEY, config)
+  try {
+    localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(config))
+  } catch (err) {
+    throw new Error(`AI config failed to persist: ${err instanceof Error ? err.message : String(err)}`)
+  }
 }

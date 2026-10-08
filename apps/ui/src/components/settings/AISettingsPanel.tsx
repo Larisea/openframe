@@ -714,16 +714,28 @@ function ProviderDetail({
 
   function handleAddModel() {
     if (!newModel.id.trim()) return
+    const modelId = newModel.id.trim()
+    const providerDef = getProviderById(provider.id, config.customProviders)
+    const isBuiltin = !!providerDef?.models.some((m) => m.id === modelId)
+    const key = `${provider.id}:${modelId}`
+    const hidden = config.hiddenModels ?? {}
+    const nextHidden = { ...hidden }
+    delete nextHidden[key]
     const model: ModelDef = {
-      id: newModel.id.trim(),
-      name: newModel.name.trim() || newModel.id.trim(),
+      id: modelId,
+      name: newModel.name.trim() || modelId,
       type: newModel.type,
       ...(newModel.type === 'embedding' && newModel.dimension ? { dimension: newModel.dimension } : {}),
     }
     const prev = config.customModels[provider.id] ?? []
     onChange({
       ...config,
-      customModels: { ...config.customModels, [provider.id]: [...prev, model] },
+      hiddenModels: nextHidden,
+      customModels: {
+        ...config.customModels,
+        // 内置模型重新添加只恢复显示（解除隐藏），避免与内置同名重复
+        [provider.id]: isBuiltin ? prev : [...prev, model],
+      },
     })
     setNewModel({ id: '', name: '', type: 'text' })
     setAddingModel(false)

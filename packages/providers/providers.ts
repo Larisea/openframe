@@ -172,6 +172,7 @@ export const AI_PROVIDERS: ProviderDef[] = [
       { id: 'wan2.6-i2v-flash', name: 'Wan2.6 I2V Flash', type: 'video' },
       { id: 'wan2.6-r2v',      name: 'Wan2.6 R2V',     type: 'video' },
       { id: 'wan2.6-r2v-flash', name: 'Wan2.6 R2V Flash', type: 'video' },
+      { id: 'wan3.0-video-prime', name: 'Wan3.0 Video Prime', type: 'video' },
     ],
   },
   {

@@ -32,7 +32,13 @@ describe('factory type helpers', () => {
     }
     const languageModel = { doStream: vi.fn() }
     const imageModel = { doGenerate: vi.fn() }
-    const videoModel = { provider: 'google', modelId: 'veo-3.1-generate-preview' }
+    // mirrors real AI SDK Experimental_VideoModelV3 (has doGenerate + maxVideosPerCall)
+    const videoModel = {
+      provider: 'google',
+      modelId: 'veo-3.1-generate-preview',
+      doGenerate: vi.fn(),
+      maxVideosPerCall: 1,
+    }
 
     expect(isCustomRestModel(customRest as never)).toBe(true)
     expect(isLanguageModel(languageModel as never)).toBe(true)

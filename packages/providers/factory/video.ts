@@ -17,9 +17,21 @@ import { createQwenVideoModel } from './platforms/qwen'
 import { generateVolcengineVideo } from './platforms/volcengine'
 import { generateOpenAICompatibleVideo } from './platforms/openai-compatible-media'
 
+/** DashScope-style video endpoints (e.g. 阿里云百炼/HappyHorse on maas workspace
+ * domains) hard-fail with "Range of input length should be [1, 61440]" when the
+ * prompt exceeds their validation cap, and truncate content beyond the model's
+ * documented limit (HappyHorse: 5000 non-Chinese / 2500 Chinese chars). Cap the
+ * prompt before sending so every request passes validation with the info the
+ * model would keep anyway. */
+const VIDEO_PROMPT_MAX_CHARS = 5000
+
+function capPrompt(text: string): string {
+  return text.length > VIDEO_PROMPT_MAX_CHARS ? text.slice(0, VIDEO_PROMPT_MAX_CHARS) : text
+}
+
 function toTextPrompt(prompt: VideoPrompt): string {
-  if (typeof prompt === 'string') return prompt
-  return prompt.text || ''
+  const text = typeof prompt === 'string' ? prompt : prompt.text || ''
+  return capPrompt(text)
 }
 
 function toImageRefs(prompt: VideoPrompt): Array<string | number[]> {
@@ -45,19 +57,19 @@ function toSdkVideoPrompt(
   model: VideoModel,
   prompt: VideoPrompt,
 ): string | { image: string | Uint8Array; text?: string } {
-  if (typeof prompt === 'string') return prompt
+  if (typeof prompt === 'string') return capPrompt(prompt)
 
   if (isAlibabaR2vModel(model)) {
-    return prompt.text || ''
+    return capPrompt(prompt.text || '')
   }
 
   const refs = Array.isArray(prompt.images) ? prompt.images : []
-  if (refs.length === 0) return prompt.text || ''
+  if (refs.length === 0) return capPrompt(prompt.text || '')
 
   const first = refs[0]
   return {
     image: Array.isArray(first) ? new Uint8Array(first) : first,
-    text: prompt.text || undefined,
+    text: prompt.text ? capPrompt(prompt.text) : undefined,
   }
 }
 

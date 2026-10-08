@@ -27,12 +27,20 @@ export function isImageModel(m: AnyModel): m is ImageModel {
   return (
     !isCustomRestModel(m) &&
     !isLanguageModel(m) &&
-    typeof (m as { doGenerate?: unknown }).doGenerate === 'function'
+    typeof (m as { doGenerate?: unknown }).doGenerate === 'function' &&
+    // AI SDK v6: both ImageModel and VideoModel expose doGenerate.
+    // VideoModel is uniquely marked by maxVideosPerCall, so exclude it here.
+    typeof (m as { maxVideosPerCall?: unknown }).maxVideosPerCall === 'undefined'
   )
 }
 
 export function isVideoModel(m: AnyModel): m is VideoModel {
-  return !isCustomRestModel(m) && !isLanguageModel(m) && !isImageModel(m)
+  return (
+    !isCustomRestModel(m) &&
+    !isLanguageModel(m) &&
+    typeof (m as { doGenerate?: unknown }).doGenerate === 'function' &&
+    typeof (m as { maxVideosPerCall?: unknown }).maxVideosPerCall !== 'undefined'
+  )
 }
 
 export type MediaReference = string | number[]

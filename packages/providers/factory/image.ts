@@ -123,7 +123,7 @@ export async function generateImageWithProviderSupport(
     const images = hasReferenceImages(args.prompt) ? args.prompt.images : []
 
     if (args.model.providerId === 'qwen') {
-      if (hasReferenceImages(args.prompt)) {
+      if (hasReferenceImages(args.prompt) && !/^qwen-image/i.test(args.model.modelId.trim())) {
         throw new Error('Qwen image API currently supports text prompt only in this adapter.')
       }
       const apiKey = args.model.apiKey || ''
@@ -133,6 +133,7 @@ export async function generateImageWithProviderSupport(
         baseURL: args.model.baseUrl || undefined,
         modelId: args.model.modelId,
         prompt,
+        ...(images.length > 0 ? { referenceImages: images } : {}),
         size: args.options?.size,
         ratio: args.options?.ratio,
       })

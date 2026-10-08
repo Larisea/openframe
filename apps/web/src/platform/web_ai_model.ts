@@ -59,7 +59,19 @@ export function resolveVideoModel(
   const model = selected ?? getDefaultVideoModel(config)
   if (!model) return { error: 'No default video model configured.' as const }
   if (!isCustomRestModel(model) && !isVideoModel(model)) {
-    return { error: 'Selected model is not a video model.' as const }
+    const info = describeModel(model)
+    return {
+      error: `Selected model is not a video model. (modelKey=${modelKey ?? '(none)'}, parsed=${parsed ? `${parsed.providerId}:${parsed.modelId}` : '(none)'}, resolved=${info})`,
+    }
   }
   return { model }
+}
+
+function describeModel(model: unknown): string {
+  if (!model || typeof model !== 'object') return String(model)
+  const row = model as Record<string, unknown>
+  const id = typeof row.modelId === 'string' ? row.modelId : typeof row.id === 'string' ? row.id : 'unknown'
+  const tag = typeof row._tag === 'string' ? row._tag : 'unknown'
+  const hasGenerate = typeof (row as { doGenerate?: unknown }).doGenerate === 'function' ? 'generate' : 'no-generate'
+  return `${tag}:${id}:${hasGenerate}`
 }
